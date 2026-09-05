@@ -118,15 +118,12 @@
           }
         },
         "url": {
-          "raw": "https://jsonplaceholder.typicode.com/users",
-          "protocol": "https",
+          "raw": "{{baseUrl}}/posts",
           "host": [
-            "jsonplaceholder",
-            "typicode",
-            "com"
+            "{{baseUrl}}"
           ],
           "path": [
-            "users"
+            "posts"
           ]
         }
       },
@@ -158,12 +155,9 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://jsonplaceholder.typicode.com/posts/1",
-          "protocol": "https",
+          "raw": "{{baseUrl}}/posts/1",
           "host": [
-            "jsonplaceholder",
-            "typicode",
-            "com"
+            "{{baseUrl}}"
           ],
           "path": [
             "posts",
@@ -172,6 +166,36 @@
         }
       },
       "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
     }
   ]
 }
