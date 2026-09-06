@@ -166,8 +166,131 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "login com sucesso",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Valida se o login deu certo\r",
+              "pm.test(\"Status code deve ser 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Valida se o token veio e salva na variável da collection\r",
+              "pm.test(\"Deve retornar um token válido e salvar na variável\", function () {\r",
+              "    var resposta = pm.response.json();\r",
+              "    \r",
+              "    // Confere se o token existe e não está vazio\r",
+              "    pm.expect(resposta.token).to.not.be.empty;\r",
+              "\r",
+              "    // A MÁGICA: Salva o token automaticamente na variável 'userToken'!\r",
+              "    pm.collectionVariables.set(\"userToken\", resposta.token);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"eve.holt@reqres.in\",\r\n  \"password\": \"cityslicka\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://reqres.in/api/login",
+          "protocol": "https",
+          "host": [
+            "reqres",
+            "in"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "login sem senha - erro esperado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Esperamos que o servidor REJEITE com erro 400\r",
+              "pm.test(\"Status code deve ser 400 Bad Request\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "// Validamos se a mensagem de erro veio explicando o motivo\r",
+              "pm.test(\"Mensagem de erro deve avisar que falta a senha\", function () {\r",
+              "    var resposta = pm.response.json();\r",
+              "    pm.expect(resposta.error).to.eql(\"Missing password\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"eve.holt@reqres.in\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://reqres.in/api/login",
+          "protocol": "https",
+          "host": [
+            "reqres",
+            "in"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
     }
   ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{userToken}}",
+        "type": "string"
+      }
+    ]
+  },
   "event": [
     {
       "listen": "prerequest",
@@ -195,6 +318,10 @@
   "variable": [
     {
       "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "userToken",
       "value": ""
     }
   ]
