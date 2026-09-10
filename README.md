@@ -1,37 +1,38 @@
-# 🚀 Testes Automatizados de API REST com Postman & Newman
+# QA API Auth Automation
 
-Projeto de testes automatizados de API REST cobrindo validações de contrato, regras de negócio, tempos de resposta, autenticação via Token e execução em linha de comando (CI/CD).
+Automated API tests built with **Postman + Newman + JavaScript (Chai)**, targeting the [ReqRes](https://reqres.in) API to validate authentication flows, error handling, and API key requirements.
 
-## 🎯 Objetivo
-Garantir a integridade e confiabilidade de APIs públicas utilizando boas práticas de QA: validação do Caminho Feliz (Happy Path), Cenários Negativos (Unhappy Path), parametrização de ambientes com variáveis, extração dinâmica de Tokens de autenticação e automação headless via terminal.
+## What this project covers
 
-## 🛠️ Tecnologias e Ferramentas
-- **Postman Desktop** (Design de requisições e execução em lote com Collection Runner)
-- **Newman CLI** (Execução automatizada em linha de comando para pipelines de CI/CD)
-- **Node.js** (Ambiente de execução de JavaScript)
-- **JavaScript / Chai Assertion Library** (Scripts de validação e asserções automatizadas)
-- **Git & GitHub** (Versionamento de código e documentação)
-- **APIs Testadas:** [JSONPlaceholder](https://jsonplaceholder.typicode.com/) e [ReqRes](https://reqres.in/)
+- ✅ Positive login flow (`POST /api/login`) — validates status code, response schema, and captures the auth token into an environment variable for reuse in later requests
+- ✅ Negative login flow (missing password) — validates status code `400` and the returned error message
+- ✅ API key requirement discovery — documented that `/api/*` endpoints now require an `x-api-key` header, and added it across the collection
+- ✅ Environment-based configuration (`base_url`, `token`, `api_key`) instead of hardcoded values
 
----
+## Key finding: two separate auth systems
 
-## 🧪 Cenários de Teste Cobertos
+While building this suite, testing revealed that ReqRes actually has **two independent authentication mechanisms**, which is not obvious from a first read of the docs:
 
-| Método | Endpoint | Cenário / Objetivo | Validações Automatizadas | Status Esperado |
-| :--- | :--- | :--- | :--- | :--- |
-| **GET** | `{{baseUrl}}/posts/1` | Consulta de post por ID | - Status Code 200<br>- Validação do `id == 1` | `200 OK` |
-| **POST** | `{{baseUrl}}/posts` | Cadastro de novo post | - Status Code 201<br>- Tempo de resposta < 1000ms<br>- Integridade do título enviado | `201 Created` |
-| **GET** | `{{baseUrl}}/posts/9999` | Cenário negativo (id inexistente) | - Validação de erro controlado | `404 Not Found` |
-| **POST** | `https://reqres.in/api/login` | Login com sucesso | - Status Code 200<br>- Extração dinâmica do token para a variável `userToken` | `200 OK` |
-| **POST** | `https://reqres.in/api/login` | Login sem senha (cenário negativo) | - Status Code 400<br>- Validação da mensagem `"Missing password"` | `400 Bad Request` |
+1. **Legacy demo auth** (`/api/login`) — returns a fixed token for tutorial/demo purposes. Does **not** grant access to `/app/*` endpoints.
+2. **App-user sessions** (`/api/app-users/login` → `/api/app-users/verify`) — requires a magic-link token delivered by email before a session can be verified, which places it outside the scope of fully automated, headless API testing without an email-testing service (e.g. Mailosaur).
 
----
+This was documented as a scoped limitation rather than worked around, since chasing it further would have meant testing an email delivery system, not the API itself — a deliberate call on test scope, not a blocker.
 
-## ▶️ Como Executar a Bateria de Testes
+## Stack
 
-### Opção 1: Via Linha de Comando (Newman CLI / CI-CD)
-> Requer Node.js instalado. Instale o Newman globalmente: `npm install -g newman`
+- Postman (collection + environment)
+- Newman (CLI test runner, for CI-style execution)
+- JavaScript / Chai assertions
 
-Execute no terminal na raiz do projeto:
+## How to run
+
 ```bash
-newman run "My Collection.postman_collection.json" --env-var "baseUrl=https://jsonplaceholder.typicode.com"
+newman run QA-Auth-Automation-ReqRes.postman_collection.json \
+  -e ReqRes-Env.postman_environment.json
+```
+
+## Possible next steps
+
+- Add a mocked/stubbed magic-link flow to demonstrate the full app-user session in isolation
+- Add CRUD scenario tests against `/api/users`
+- Wire up a GitHub Actions workflow to run the collection on every push
